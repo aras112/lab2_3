@@ -11,8 +11,7 @@ import static org.hamcrest.Matchers.is;
 
 public class SimilarityFinderTest
     {
-    SequenceSearcher sequenceSearcher;
-    SearchResult searchResult;
+    SequenceSearcherMock sequenceSearcher;
 
     @Before
     public void before()
@@ -26,11 +25,10 @@ public class SimilarityFinderTest
         int[] tab1 = {1, 2};
         int[] tab2 = {1, 2};
 
-        sequenceSearcher = getMockSearcher(booleanValueOfNextSearchResult);
+        sequenceSearcher = new SequenceSearcherMock(booleanValueOfNextSearchResult);
         SimilarityFinder similarityFinder = new SimilarityFinder(sequenceSearcher);
-
         Assert.assertThat(similarityFinder.calculateJackardSimilarity(tab1, tab2), is(1D));
-
+        Assert.assertThat(sequenceSearcher.getCountSearchResult(), is(2));
         }
 
     @Test
@@ -40,53 +38,51 @@ public class SimilarityFinderTest
         int[] tab1 = {1, 2};
         int[] tab2 = {1, 2, 3};
 
-        sequenceSearcher = getMockSearcher(booleanValueOfNextSearchResult);
+        sequenceSearcher = new SequenceSearcherMock(booleanValueOfNextSearchResult);
         SimilarityFinder similarityFinder = new SimilarityFinder(sequenceSearcher);
 
         Assert.assertThat(similarityFinder.calculateJackardSimilarity(tab1, tab2), is(2D / 3D));
-
+        Assert.assertThat(sequenceSearcher.getCountSearchResult(), is(2));
         }
 
     @Test
     public void simpleTestWithSimilarTabNowMoreValuesInFirstTab()
         {
         final boolean[] booleanValueOfNextSearchResult = {true, true, false};
+        final Integer countSearchResult = 0;
         int[] tab1 = {1, 2, 5};
         int[] tab2 = {1, 2, 3};
 
-        sequenceSearcher = getMockSearcher(booleanValueOfNextSearchResult);
+        sequenceSearcher = new SequenceSearcherMock(booleanValueOfNextSearchResult);
         SimilarityFinder similarityFinder = new SimilarityFinder(sequenceSearcher);
 
         Assert.assertThat(similarityFinder.calculateJackardSimilarity(tab1, tab2), is(2D / 4D));
-
+        Assert.assertThat(sequenceSearcher.getCountSearchResult(), is(3));
         }
 
 
-    private SequenceSearcher getMockSearcher(final boolean[] tabOfBoolForShearer)
+
+
+    private class SequenceSearcherMock implements SequenceSearcher
         {
-        return new SequenceSearcher()
+        private boolean[] tabOfBoolForShearer;
+        private Integer countSearchResult = 0;
+
+        public Integer getCountSearchResult()
             {
+            return countSearchResult;
+            }
 
-            private Integer countSearchResult = 0;
+        public SequenceSearcherMock(boolean[] tabOfBoolForShearer)
+            {
+            this.tabOfBoolForShearer = tabOfBoolForShearer;
+            }
 
-            public Integer getCountSearchResult()
-                {
-                return countSearchResult;
-                }
-
-            public void setCountSearchResult(Integer countSearchResult)
-                {
-                this.countSearchResult = countSearchResult;
-                }
-
-            @Override
-            public SearchResult search(int i, int[] ints)
-                {
-                return getMockSearchResult(tabOfBoolForShearer, countSearchResult++);
-                }
-
-
-            };
+        @Override
+        public SearchResult search(int i, int[] ints)
+            {
+            return getMockSearchResult(tabOfBoolForShearer, countSearchResult++);
+            }
         }
 
     private SearchResult getMockSearchResult(final boolean[] tabOfBoolForShearer,
